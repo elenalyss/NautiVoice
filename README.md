@@ -8,14 +8,13 @@ It integrates:
 - **FastAPI backend** serving the models as an API  
 - A simple **web frontend** for recording incidents and viewing predictions  
 
-The system allows a user to report an incident through voice input. The audio is transcribed into text, classified into the correct **incident category** and **severity level**, and finally displayed in a dashboard-style interface.
+The system allows a user to report an incident through voice input. The audio is transcribed into text, classified into the correct **incident category** and **severity level**.
 
 ---
 
 ## Requirements
 - **Python 3.10+**
 - **pip** (Python package manager)
-- **git** (to clone repository)
 - **ffmpeg** (for audio processing – must be installed separately)
 - Recommended: use a **virtual environment** (venv/conda)
 
@@ -23,25 +22,19 @@ The system allows a user to report an incident through voice input. The audio is
 
 ## Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/nautivoice.git
-   cd nautivoice
-   ```
-
-2. **Create virtual environment (recommended)**
+1. **Create virtual environment (recommended)**
    ```bash
    python -m venv venv
    source venv/bin/activate   # on macOS/Linux
    venv\Scripts\activate      # on Windows
    ```
 
-3. **Install dependencies**
+2. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Install ffmpeg**
+3. **Install ffmpeg**
    - On macOS (Homebrew):
      ```bash
      brew install ffmpeg
@@ -53,7 +46,7 @@ The system allows a user to report an incident through voice input. The audio is
    - On Windows:  
      Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
 
-5. **Download / Place fine-tuned models**
+4. **Download / Place fine-tuned models**
    - Place the following model folders inside the project root:
      - `nautivoice-category-augm`
      - `nautivoice-severity-augm-2`
