@@ -105,4 +105,4 @@ The system allows a user to report an incident through voice input. The audio is
 ---
 
 ## License
-This project was developed as part of the **Machine Learning mini-project (Spring 2025)** for educational purposes.
+This project was developed as part of the **Machine Learning mini-project** for educational purposes.
