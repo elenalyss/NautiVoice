@@ -80,11 +80,11 @@ The system allows a user to report an incident through voice input. The audio is
 ## Project Structure
 ```
 .
-├── app.py                     # FastAPI backend (ASR + Classification API)
-├── asr_pipeline.py            # Standalone ASR pipeline (Whisper)
-├── train_category_augm.py     # Training script for Category model
-├── evaluate_category_augm.py  # Evaluation script for Category model
-├── train_severity_augm_2.py     # Training script for Severity model
+├── app.py                      # FastAPI backend (ASR + Classification API)
+├── asr_pipeline.py             # Standalone ASR pipeline (Whisper)
+├── train_category_augm.py      # Training script for Category model
+├── evaluate_category_augm.py   # Evaluation script for Category model
+├── train_severity_augm_2.py    # Training script for Severity model
 ├── evaluate_severity_augm2.py  # Evaluation script for Severity model
 ├── run_pipeline.py             # Example pipeline runner
 ├── requirements.txt            # Dependencies
