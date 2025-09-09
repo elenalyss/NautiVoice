@@ -57,7 +57,7 @@ The system allows a user to report an incident through voice input. The audio is
 
 1. **Start the FastAPI backend**
    ```bash
-   uvicorn app:app --reload
+   python -m uvicorn app:app --reload --port 8000
    ```
    This will start the API at:
    ```
