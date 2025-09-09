@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NautiVoice - Report an Incident</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1a2b; --ink:#e8f1ff; --muted:#9fb3c8;
+      --accent:#36d399; --accent2:#60a5fa; --warn:#fbbf24; --danger:#f87171;
+      --border:rgba(255,255,255,.08)
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 800px at 70% -10%, #1b2750, #0b1220 50%);
+      color:var(--ink);
+    }
+    header{
+      display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+      position:sticky; top:0; backdrop-filter: blur(6px);
+    }
+    header .logo{
+      width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+      background:linear-gradient(135deg, #60a5fa, #36d399); font-weight:700;
+      color:#05223b; box-shadow:0 8px 24px rgba(96,165,250,.25);
+    }
+    main{max-width:1000px; margin:36px auto; padding:0 20px}
+    h1{margin:12px 0 8px; font-size:32px}
+    p.lead{margin:0 0 24px; color:var(--muted)}
+    .grid{display:grid; gap:18px}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border); border-radius:16px; padding:18px;
+      box-shadow:0 8px 30px rgba(0,0,0,.25);
+    }
+    label{display:block; font-size:14px; color:var(--muted); margin-bottom:8px}
+    input[type=text], textarea{
+      width:100%; padding:14px 12px; border-radius:12px; border:1px solid var(--border);
+      background:#0a1424; color:var(--ink); outline:none;
+    }
+    textarea{min-height:130px; resize:vertical}
+    .row{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    .btns{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+    button{
+      appearance:none; border:1px solid var(--border); background:#0a1424; color:var(--ink);
+      padding:12px 16px; border-radius:12px; font-weight:600; cursor:pointer
+    }
+    button.primary{background:var(--accent); color:#042016; border:none}
+    button.warning{background:var(--warn); color:#2a1900; border:none}
+    button.danger{background:var(--danger); color:#2a0a0a; border:none}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+      background:#0a1424; border:1px solid var(--border); color:var(--muted); font-size:12px
+    }
+    .scores{display:grid; gap:6px; margin-top:10px}
+    .bar{height:8px; background:#12203a; border-radius:999px; overflow:hidden}
+    .bar > span{display:block; height:100%; background: linear-gradient(90deg, var(--accent2), var(--accent))}
+    .muted{color:var(--muted)}
+    .footer{margin:28px 0; text-align:center; color:var(--muted); font-size:12px}
+    .hidden{display:none}
+    .blink{animation: bl 1s infinite}
+    @keyframes bl{0%,100%{opacity:1}50%{opacity:.35}}
+  </style>
+</head>
+<body>
+  <header>
+    <!-- <div class="logo">⚓</div> -->
+    <div class="logo">
+      <img src="static/logo.png" alt="Logo" style="width: 100%; height: 100%; border-radius: 12px;" />
+    </div>
+    
+    <div>
+      <div style="font-size:18px; font-weight:700">NautiVoice – Incident Reporter</div>
+      <div class="muted" style="font-size:13px">Record your report → speech‑to‑text → category & severity prediction</div>
+    </div>
+  </header>
+
+  <main>
+    <h1>Report a Problem</h1>
+    <p class="lead">Click <b>Start recording</b> and speak. You’ll see the transcript and the predicted
+      <span class="pill">category</span> and <span class="pill">severity</span>.</p>
+
+    <div class="grid">
+      <!-- Recorder -->
+      <section class="card">
+        <label>Controls</label>
+        <div class="btns">
+          <button id="btnRec" class="primary">Start recording</button>
+          <button id="btnStop" class="danger" disabled>Stop</button>
+          <button id="btnSend" class="warning" disabled>Send to model</button>
+        </div>
+        <div id="hint" class="muted" style="margin-top:10px">Status: idle</div>
+      </section>
+
+      <!-- Transcript -->
+      <section class="card">
+        <label>Transcript</label>
+        <textarea id="transcript" placeholder="Your speech will appear here…"></textarea>
+      </section>
+
+      <!-- Results -->
+      <section class="card">
+        <div class="row">
+          <div>
+            <label>Predicted Category</label>
+            <div id="catLabel" class="pill">—</div>
+            <div id="catScores" class="scores"></div>
+          </div>
+          <div>
+            <label>Predicted Severity</label>
+            <div id="sevLabel" class="pill">—</div>
+            <div id="sevScores" class="scores"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">Tip: allow microphone permission when asked. Everything runs locally against your FastAPI server.</div>
+  </main>
+
+  <script>
+    // ======== Audio capture -> WAV encoder (mono, 16‑bit) ========
+    let audioCtx, mediaStream, processor, source;
+    let recording = false;
+    let pcmBuffers = [];     // Float32 chunks  (native sample rate)
+    let sampleRate = 44100;  // will be set from AudioContext
+
+    const hint = msg => document.getElementById('hint').textContent = 'Status: ' + msg;
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)({latencyHint:'interactive'});
+      sampleRate = audioCtx.sampleRate;
+    }
+
+    async function startRecording(){
+      initAudio();
+      mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+      source = audioCtx.createMediaStreamSource(mediaStream);
+      // ScriptProcessor works broadly (though deprecated)
+      processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      pcmBuffers = [];
+      processor.onaudioprocess = e => {
+        if (!recording) return;
+        const input = e.inputBuffer.getChannelData(0); // Float32Array
+        pcmBuffers.push(new Float32Array(input));      // copy
+      };
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+      recording = true;
+      document.getElementById('btnStop').disabled = false;
+      document.getElementById('btnSend').disabled = true;
+      document.getElementById('btnRec').disabled = true;
+      hint('recording…'); document.getElementById('btnRec').classList.add('blink');
+    }
+
+    function stopRecording(){
+      recording = false;
+      document.getElementById('btnRec').classList.remove('blink');
+      if (processor) { processor.disconnect(); processor = null; }
+      if (source)     { source.disconnect();     source = null; }
+      if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+      document.getElementById('btnStop').disabled = true;
+      document.getElementById('btnSend').disabled = false;
+      document.getElementById('btnRec').disabled  = false;
+      hint('recording stopped. Ready to send.');
+    }
+
+    // Merge Float32 chunks -> one Float32; then encode to WAV (PCM 16-bit)
+    function float32Concat(chunks){
+      const len = chunks.reduce((a,b)=>a+b.length,0);
+      const out = new Float32Array(len);
+      let off = 0;
+      for (const c of chunks){ out.set(c, off); off += c.length; }
+      return out;
+    }
+
+    // optional: downsample to 16000 Hz (linear interpolation)
+    function resampleFloat32(float32, inRate, outRate=16000){
+      if (inRate === outRate) return {data: float32, rate: inRate};
+      const ratio = inRate / outRate;
+      const newLen = Math.round(float32.length / ratio);
+      const out = new Float32Array(newLen);
+      let pos = 0;
+      for (let i=0; i<newLen; i++){
+        const idx = i*ratio;
+        const i0 = Math.floor(idx), i1 = Math.min(float32.length-1, i0+1);
+        const t = idx - i0;
+        out[i] = (1-t)*float32[i0] + t*float32[i1];
+      }
+      return {data: out, rate: outRate};
+    }
+
+    function encodeWAV(float32, rate){
+      // convert [-1,1] Float32 -> 16bit PCM
+      const pcm16 = new Int16Array(float32.length);
+      for (let i=0; i<float32.length; i++){
+        let s = Math.max(-1, Math.min(1, float32[i]));
+        pcm16[i] = s < 0 ? s*0x8000 : s*0x7FFF;
+      }
+      const bytesPerSample = 2, numChannels = 1;
+      const blockAlign = numChannels * bytesPerSample;
+      const byteRate   = rate * blockAlign;
+      const dataSize   = pcm16.length * bytesPerSample;
+      const buffer = new ArrayBuffer(44 + dataSize);
+      const view   = new DataView(buffer);
+
+      function wrStr(off, str){ for (let i=0;i<str.length;i++) view.setUint8(off+i, str.charCodeAt(i)); }
+      let off = 0;
+      wrStr(off, 'RIFF'); off += 4;
+      view.setUint32(off, 36 + dataSize, true); off += 4;
+      wrStr(off, 'WAVE'); off += 4;
+      wrStr(off, 'fmt '); off += 4;
+      view.setUint32(off, 16, true); off += 4;               // PCM chunk size
+      view.setUint16(off, 1, true);  off += 2;               // PCM
+      view.setUint16(off, numChannels, true); off += 2;
+      view.setUint32(off, rate, true); off += 4;
+      view.setUint32(off, byteRate, true); off += 4;
+      view.setUint16(off, blockAlign, true); off += 2;
+      view.setUint16(off, 16, true); off += 2;               // bits/sample
+      wrStr(off, 'data'); off += 4;
+      view.setUint32(off, dataSize, true); off += 4;
+      // PCM data
+      let p = off;
+      for (let i=0;i<pcm16.length;i++, p+=2) view.setInt16(p, pcm16[i], true);
+      return new Blob([view], {type:'audio/wav'});
+    }
+
+    async function sendToServer(){
+      if (!pcmBuffers.length){ alert('No audio captured yet'); return; }
+      hint('preparing audio…');
+      const floatAll = float32Concat(pcmBuffers);
+      const {data: ds, rate} = resampleFloat32(floatAll, sampleRate, 16000); // 16k for good measure
+      const wavBlob = encodeWAV(ds, rate);
+
+      const fd = new FormData();
+      // the backend expects ".wav" filename
+      fd.append('file', wavBlob, 'report.wav');
+
+      hint('contacting model…');
+      document.getElementById('btnSend').disabled = true;
+
+      try{
+        const res  = await fetch('/predict', {method:'POST', body: fd});
+        if (!res.ok){
+          const txt = await res.text();
+          throw new Error(`${res.status}: ${txt}`);
+        }
+        const out = await res.json();
+        document.getElementById('transcript').value = out.transcript || '';
+
+        renderScores('cat', out.category);
+        renderScores('sev', out.severity);
+
+        hint('done ✓');
+      }catch(err){
+        console.error(err);
+        alert('Request failed:\n' + err.message);
+        hint('error (see console)');
+      }finally{
+        document.getElementById('btnSend').disabled = false;
+      }
+    }
+
+    function renderScores(prefix, obj){
+      const labelEl = document.getElementById(prefix+'Label');
+      const scoresEl= document.getElementById(prefix+'Scores');
+      if (!obj){ labelEl.textContent='—'; scoresEl.innerHTML=''; return; }
+      labelEl.textContent = `${obj.label}`;
+      scoresEl.innerHTML = '';
+      const entries = Object.entries(obj.scores || {});
+      entries.sort((a,b)=>b[1]-a[1]);
+      for (const [name, val] of entries){
+        const pct = Math.round(val*100);
+        const row = document.createElement('div');
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted)">
+            <span>${name}</span><span>${pct}%</span>
+          </div>
+          <div class="bar"><span style="width:${pct}%"></span></div>`;
+        scoresEl.appendChild(row);
+      }
+    }
+
+    // UI wiring
+    document.getElementById('btnRec').addEventListener('click', startRecording);
+    document.getElementById('btnStop').addEventListener('click', stopRecording);
+    document.getElementById('btnSend').addEventListener('click', sendToServer);
+  </script>
+</body>
+</html>
