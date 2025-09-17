@@ -46,10 +46,12 @@ The system allows a user to report an incident through voice input. The audio is
    - On Windows:  
      Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
 
-4. **Download / Place fine-tuned models**
-   - Place the following model folders inside the project root:
-     - `nautivoice-category-augm`
-     - `nautivoice-severity-augm-2`
+4. **Download the fine-tuned models**
+   The fine-tuned models are now available as downloadable links from Google Drive due to GitHub size limitation.
+   Please check the models_link.md file in the repository for download links.
+   Download and extract the models into the project root, so the structure looks like this:
+   nautivoice-category-augm/
+   nautivoice-severity-augm-2/
 
 ---
 
@@ -81,12 +83,30 @@ The system allows a user to report an incident through voice input. The audio is
 ├── evaluate_severity_augm2.py  # Evaluation script for Severity model
 ├── run_pipeline.py             # Example pipeline runner
 ├── requirements.txt            # Dependencies
+├── models_link.md              # Download links for fine-tuned models
 ├── static/                     # Frontend (index.html, JS, CSS)
-├── nautivoice-category-augm/   # Fine-tuned Category model
-└── nautivoice-severity-augm-2/ # Fine-tuned Severity model
+├── nautivoice-category-augm/   # Fine-tuned Category model (after download from google drive)
+└── nautivoice-severity-augm-2/ # Fine-tuned Severity model (after download from google drive)
 ```
 
 ---
+
+## Features
+
+~ Voice input via browser  
+~ Real-time ASR using Whisper  
+~ Incident classification using BERT  
+~ Web UI + FastAPI backend
+
+## TODO / Future Work
+
+- Add user authentication  
+- Store incidents in a database  
+- Improve UI design  
+- Support multiple languages
+
+---
+
 
 ## Troubleshooting
 - **Audio not recognized / ASR error** → Ensure `ffmpeg` is correctly installed and accessible in your PATH.  
