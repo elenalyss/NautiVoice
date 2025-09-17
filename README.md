@@ -76,15 +76,20 @@ The system allows a user to report an incident through voice input. The audio is
 ```
 .
 ├── app.py                      # FastAPI backend (ASR + Classification API)
-├── asr_pipeline.py             # Standalone ASR pipeline (Whisper)
-├── train_category_augm.py      # Training script for Category model
-├── evaluate_category_augm.py   # Evaluation script for Category model
-├── train_severity_augm_2.py    # Training script for Severity model
-├── evaluate_severity_augm2.py  # Evaluation script for Severity model
-├── run_pipeline.py             # Example pipeline runner
 ├── requirements.txt            # Dependencies
+├── train & evaluate scripts/   # Training & evaluation (not required for app)
+│   ├── train_category_augm.py   # Training script for Category model
+│   ├── evaluate_category_augm.py   # Evaluation script for Category model
+│   ├── train_severity_augm_2.py # Training script for Severity model
+│   └── evaluate_severity_augm2.py  # Evaluation script for Category model
+├── helper & demo scripts/   # Demo and preprocess before web app (not required for app)
+│   ├── run_pipeline.py             # Example pipeline runner
+│   ├── asr_pipeline.py             # Standalone ASR pipeline (Whisper)
+│   └── record_wav  # Manual audio recording from command line
+├── static/   # Frontend (index.html, JS, CSS)
+│   ├── index.html   # html code for the UI of web app
+│   └── logo.png  # Logo for the web app
 ├── models_link.md              # Download links for fine-tuned models
-├── static/                     # Frontend (index.html, JS, CSS)
 ├── nautivoice-category-augm/   # Fine-tuned Category model (after download from google drive)
 └── nautivoice-severity-augm-2/ # Fine-tuned Severity model (after download from google drive)
 ```
