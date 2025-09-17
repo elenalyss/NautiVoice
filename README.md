@@ -85,7 +85,7 @@ The system allows a user to report an incident through voice input. The audio is
 ├── helper & demo scripts/   # Demo and preprocess before web app (not required for app)
 │   ├── run_pipeline.py             # Example pipeline runner
 │   ├── asr_pipeline.py             # Standalone ASR pipeline (Whisper)
-│   └── record_wav  # Manual audio recording from command line
+│   └── record_wav.py  # Manual audio recording from command line
 ├── static/   # Frontend (index.html, JS, CSS)
 │   ├── index.html   # html code for the UI of web app
 │   └── logo.png  # Logo for the web app
