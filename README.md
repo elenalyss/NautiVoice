@@ -124,7 +124,7 @@ The system allows a user to report an incident through voice input. The audio is
 ---
 
 ## Authors / Roles
-- **Elena** – Category classification training, FastAPI backend, integration of frontend  
+- **Elena** – Category classification training /evalution, FastAPI backend, integration of frontend, data preprocessing/annotation, documentation
 - **Natalia** – Severity classification training, data preprocessing/annotation, evaluation, documentation  
 
 ---
